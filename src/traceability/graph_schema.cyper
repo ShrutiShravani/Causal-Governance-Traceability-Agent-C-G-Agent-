@@ -1,0 +1,51 @@
+-- db/graph_schema.cypher
+
+-- ----------------------------------------------------------------------
+-- 1. CORE ARCHITECTURAL NODES: Used to anchor time, execution, and identity
+-- ----------------------------------------------------------------------
+
+-- Agent: The actor (e.g., 'CriticAgent', 'DAA', 'PredictionAgent')
+CREATE CONSTRAINT IF NOT EXISTS FOR (a:Agent) REQUIRE a.name IS UNIQUE;
+
+-- Transaction: The primary client anchor (client_transaction_id)
+CREATE CONSTRAINT IF NOT EXISTS FOR (t:Transaction) REQUIRE t.id IS UNIQUE;
+
+-- Event: The immutable log entry anchor (linked to audit_event.event_id)
+CREATE CONSTRAINT IF NOT EXISTS FOR (e:Event) REQUIRE e.id IS UNIQUE;
+
+-- Artifact: Pointers to external evidence files (reports, DVC paths)
+CREATE CONSTRAINT IF NOT EXISTS FOR (art:Artifact) REQUIRE art.id IS UNIQUE;
+
+
+-- ----------------------------------------------------------------------
+-- 2. GOVERNANCE AND PROVENANCE NODES
+-- ----------------------------------------------------------------------
+
+-- DatasetVersion: Certified training data hashes (e.g., from DATA_HASH_SAVED)
+CREATE CONSTRAINT IF NOT EXISTS FOR (ds:DatasetVersion) REQUIRE ds.hash IS UNIQUE;
+
+-- PolicyDocument: The definition of the PaC (e.g., Preprocess Policy)
+CREATE CONSTRAINT IF NOT EXISTS FOR (pd:PolicyDocument) REQUIRE pd.id IS UNIQUE;
+
+-- Violation: Specific causal reason for failure (e.g., 'SEX', 'AGE', 'LOW_CONFIDENCE')
+CREATE CONSTRAINT IF NOT EXISTS FOR (v:Violation) REQUIRE v.attribute IS UNIQUE;
+
+
+-- ----------------------------------------------------------------------
+-- 3. DECISION AND HUMAN INTERVENTION NODES
+-- ----------------------------------------------------------------------
+
+-- PolicyCheck: The specific runtime check performed by the Critic Agent (e.g., 'ProhibitedAttributesCheck')
+CREATE CONSTRAINT IF NOT EXISTS FOR (pc:PolicyCheck) REQUIRE pc.name IS UNIQUE;
+
+-- FinalDecision: The system's computed outcome (anchored to the Transaction)
+CREATE CONSTRAINT IF NOT EXISTS FOR (d:FinalDecision) REQUIRE d.transaction_id IS UNIQUE;
+
+-- HumanOversight: The mandatory regulatory action point (Escalation)
+CREATE CONSTRAINT IF NOT EXISTS FOR (h:HumanOversight) REQUIRE h.id IS UNIQUE;
+
+-- ExplanationArtifact: Core XAI data generated (e.g., SHAP drivers)
+CREATE CONSTRAINT IF NOT EXISTS FOR (xai:ExplanationArtifact) REQUIRE xai.id IS UNIQUE;
+
+-- PredictionMetrics: Quantitative metrics logged during prediction
+CREATE CONSTRAINT IF NOT EXISTS FOR (m:PredictionMetrics) REQUIRE m.id IS UNIQUE;

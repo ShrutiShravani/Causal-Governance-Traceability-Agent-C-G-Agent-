@@ -1,0 +1,71 @@
+# ===============================================================
+# POLICY REGISTRY — Maps each policy-as-code rule to:
+# - OPA/Rego file
+# - Description and enforcement context
+# - Related EU AI Act article (or other regulation)
+# - RAG reference for later text retrieval
+# ===============================================================
+
+policies:
+  - policy_id: prohibited_attribute_check
+    name: "Prohibited Attribute Influence Check"
+    version: "1.0"
+    description: >
+      Ensures that sensitive or protected attributes (e.g., SEX, AGE, EDUCATION)
+      do not exert an excessive influence in local or global model explanations.
+      Violations trigger a governance escalation or human review.
+    rego_path: "policy_store/prohibited_attributes.rego"
+    enforcement_phase: "runtime"
+    related_regulation:
+      source: "EU AI Act"
+      article: "Article 10 - Data and Data Governance"
+      summary: >
+        AI systems must ensure data quality and prevent bias based on
+        protected attributes such as sex, age, or education.
+        #if we add rag later
+    rag_reference:
+      doc_id: "eu_ai_act_article_10"
+      doc_path: "regulations/eu_ai_act_article_10.txt"
+      vector_tag: "bias_mitigation"
+    action_on_violation: "BLOCK"
+
+  - policy_id: confidence_threshold_check
+    name: "Confidence Threshold and Human Oversight"
+    version: "1.0"
+    description: >
+      Enforces human oversight for low-confidence model predictions.
+      Ensures compliance with EU AI Act Article 14 requiring
+      transparency and human control.
+    rego_path: "policy_store/confidence_threshold.rego"
+    enforcement_phase: "runtime"
+    related_regulation:
+      source: "EU AI Act"
+      article: "Article 14 - Human Oversight"
+      summary: >
+        High-risk AI systems must allow effective human oversight when
+        confidence is below a specified threshold.
+    rag_reference:
+      doc_id: "eu_ai_act_article_14"
+      doc_path: "regulations/eu_ai_act_article_14.txt"
+      vector_tag: "human_oversight"
+    action_on_violation: "ESCALATE"
+
+  - policy_id: provenance_compliance_check
+    name: "Data Provenance & PaC Compliance Check"
+    version: "1.0"
+    description: >
+      Verifies that the model used for prediction was trained under
+      approved preprocessing and PaC (Policy-as-Code) conditions.
+    opa_policy_path: "policy_store/provenance_check.rego"
+    enforcement_phase: "pre-prediction"
+    related_regulation:
+      source: "EU AI Act"
+      article: "Article 9 - Risk Management System"
+      summary: >
+        AI providers must maintain documented controls and traceability
+        for the data and models used.
+    rag_reference:
+      doc_id: "eu_ai_act_article_9"
+      doc_path: "regulations/eu_ai_act_article_9.txt"
+      vector_tag: "traceability"
+    action_on_violation: "DENY"

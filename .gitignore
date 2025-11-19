@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Data / outputs
+data/
+outputs/
+interim/
+*.csv
+*.json
+*.parquet
+
+# DVC cache (optional)
+.dvc/

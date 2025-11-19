@@ -1,0 +1,32 @@
+# Core ML + causal inference
+pandas
+scikit-learn
+dowhy
+econml
+shap
+cleanlab
+
+# Governance + API 
+fastapi
+uvicorn
+pydantic
+
+# RAG assistant
+langchain
+faiss-cpu
+openai
+
+# Tracking + Monitoring
+mlflow
+dvc
+prometheus-client
+opentelemetry-api
+opentelemetry-sdk
+
+# DB + logging
+sqlalchemy
+psycopg2-binary
+
+# Testing
+pytest
+imblearn

@@ -1,0 +1,32 @@
+stages:
+ data_pipeline:
+  cmd: python src/data_pipeline/data_assurance_agent.py
+  deps:
+   - src\data_pipeline\data_loader.py
+   - src\config\paths.yaml
+   - src\config\features.yaml
+   - src\data_pipeline\data_cleaning.py
+   - default of credit card clients.csv
+   - src\data_pipeline\confident_learning.py
+   - src\data_pipeline\feature_engineering.py
+   - src\data_pipeline\data_hashing.py
+   - src\data_pipeline\preprocess_policies.py
+   - src\traceability\audit_logger.py
+
+
+  outs:
+   - data/datasets/raw/raw_credit.csv 
+   - data/datasets/interim/credit_clean_interim.csv
+   - data/quality/confident_learning_report.csv
+   - data/quality/mislabelled_report.json
+   - data/datasets/data_ingested/X_train_credit_clean.csv
+   - data/datasets/data_ingested/X_test_credit_clean.csv
+   - data/datasets/data_ingested/X_val_credit_clean.csv
+   - data/datasets/data_ingested/y_train_credit_clean.csv
+   - data/datasets/data_ingested/y_test_credit_clean.csv
+   - data/datasets/data_ingested/y_val_credit_clean.csv
+   - data/datasets/final/credit_clean.csv
+   - data/datasets/hash_version/hash_train_val.json
+   - data/datasets/hash_version/hash_test.json
+   - pac_metadata:data/version/metadata.yaml
+

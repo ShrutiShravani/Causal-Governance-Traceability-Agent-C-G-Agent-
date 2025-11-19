@@ -1,0 +1,185 @@
+# ===========================================================
+# Feature Configuration for Credit Default Risk + Causal Governance Agent (C-G Agent)
+# Dataset: UCI Credit Card Default (Taiwan, 2005)
+# ===========================================================
+
+raw_features:
+  - ID
+  - LIMIT_BAL
+  - SEX
+  - EDUCATION
+  - MARRIAGE
+  - AGE
+  - PAY_0
+  - PAY_2
+  - PAY_3
+  - PAY_4
+  - PAY_5
+  - PAY_6
+  - BILL_AMT1
+  - BILL_AMT2
+  - BILL_AMT3
+  - BILL_AMT4
+  - BILL_AMT5
+  - BILL_AMT6
+  - PAY_AMT1
+  - PAY_AMT2
+  - PAY_AMT3
+  - PAY_AMT4
+  - PAY_AMT5
+  - PAY_AMT6
+  - default.payment.next.month
+
+dtypes:
+  ID: int64
+  LIMIT_BAL: float64
+  SEX: int64
+  EDUCATION: int64
+  MARRIAGE: int64
+  AGE: int64
+  PAY_0: int64
+  PAY_2: int64
+  PAY_3: int64
+  PAY_4: int64
+  PAY_5: int64
+  PAY_6: int64
+  BILL_AMT1: float64
+  BILL_AMT2: float64
+  BILL_AMT3: float64
+  BILL_AMT4: float64
+  BILL_AMT5: float64
+  BILL_AMT6: float64
+  PAY_AMT1: float64
+  PAY_AMT2: float64
+  PAY_AMT3: float64
+  PAY_AMT4: float64
+  PAY_AMT5: float64
+  PAY_AMT6: float64
+  default.payment.next.month: int64
+
+# ===========================================================
+# Training Configuration
+# ===========================================================
+
+# Columns to include/exclude for model training
+train_features:
+  include:
+    - ID
+    - LIMIT_BAL
+    - SEX
+    - EDUCATION
+    - MARRIAGE
+    - AGE
+    - PAY_0
+    - PAY_2
+    - PAY_3
+    - PAY_4
+    - PAY_5
+    - PAY_6
+    - BILL_AMT1
+    - BILL_AMT2
+    - BILL_AMT3
+    - BILL_AMT4
+    - BILL_AMT5
+    - BILL_AMT6
+    - PAY_AMT1
+    - PAY_AMT2
+    - PAY_AMT3
+    - PAY_AMT4
+    - PAY_AMT5
+    - PAY_AMT6
+
+target: default.payment.next.month
+
+# ===========================================================
+# Feature Group Definitions by C-G Agent Governance Role
+# ===========================================================
+
+feature_groups:
+
+  traceability_only:
+    - ID
+    # Used by the Traceability Agent to link audit results to a specific client.
+
+  demographic_sensitive:
+    - SEX
+    - EDUCATION
+    - MARRIAGE
+    - AGE
+    # Deliberately included during model training to allow bias auditing by C-G Agent.
+    # These variables represent protected or proxy attributes.
+
+  credit_capacity:
+    - LIMIT_BAL
+    # Represents the client's credit limit and financial exposure.
+
+  repayment_history:
+    - PAY_0
+    - PAY_2
+    - PAY_3
+    - PAY_4
+    - PAY_5
+    - PAY_6
+    # Payment status across past six months (April–September 2005).
+
+  billing_behavior:
+    - BILL_AMT1
+    - BILL_AMT2
+    - BILL_AMT3
+    - BILL_AMT4
+    - BILL_AMT5
+    - BILL_AMT6
+    # Monthly billed amounts in NT dollars for six months.
+
+  repayment_amounts:
+    - PAY_AMT1
+    - PAY_AMT2
+    - PAY_AMT3
+    - PAY_AMT4
+    - PAY_AMT5
+    - PAY_AMT6
+    # Monthly repayment amounts corresponding to each billing period.
+
+
+numerical_cols:
+    - LIMIT_BAL
+    - AGE
+    - PAY_0
+    - PAY_2
+    - PAY_3
+    - PAY_4
+    - PAY_5
+    - PAY_6
+    - BILL_AMT1
+    - BILL_AMT2
+    - BILL_AMT3
+    - BILL_AMT4
+    - BILL_AMT5
+    - BILL_AMT6
+    - PAY_AMT1
+    - PAY_AMT2
+    - PAY_AMT3
+    - PAY_AMT4
+    - PAY_AMT5
+    - PAY_AMT6
+
+categorical_cols:
+    - SEX
+    - EDUCATION
+    - MARRIAGE
+# ===========================================================
+# Governance Metadata for the Causal Governance Agent
+# ===========================================================
+
+governance_notes: |
+  - The ID column must remain in all datasets for traceability, 
+    even though it is excluded from model training.
+  - Demographic features (SEX, EDUCATION, MARRIAGE, AGE) 
+    are used in the model so that the Causal Governance Agent 
+    can measure their influence and detect bias.
+  - During deployment, the XAI layer (e.g., SHAP or CausalML) 
+    must validate that predictions do not unfairly depend on these features.
+  - The model should primarily depend on repayment and billing behavior features 
+    (financial capacity, repayment history, and repayment amounts).
+  - Any significant contribution of demographic-sensitive features 
+    must be flagged by the Critic Agent for compliance review.
