@@ -21,3 +21,4 @@ interim/
 
 # DVC cache (optional)
 .dvc/
+.dvc/cache/

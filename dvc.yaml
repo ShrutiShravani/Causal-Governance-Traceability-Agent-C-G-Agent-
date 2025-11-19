@@ -1,6 +1,6 @@
 stages:
  data_pipeline:
-  cmd: python src/data_pipeline/data_assurance_agent.py
+  cmd: python "src\agent\data_assurance_agent.py"
   deps:
    - src\data_pipeline\data_loader.py
    - src\config\paths.yaml
@@ -28,5 +28,5 @@ stages:
    - data/datasets/final/credit_clean.csv
    - data/datasets/hash_version/hash_train_val.json
    - data/datasets/hash_version/hash_test.json
-   - pac_metadata:data/version/metadata.yaml
+   - data/version/metadata.yaml
 
