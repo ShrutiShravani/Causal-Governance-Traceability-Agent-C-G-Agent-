@@ -1,0 +1,19 @@
+  provenance_compliance_check:  # ← Use as KEY
+    name: "Data Provenance & PaC Compliance Check"
+    version: "1.0"
+    description: >
+      Verifies that the model used for prediction was trained under
+      approved preprocessing and PaC (Policy-as-Code) conditions.
+    rego_path: "src\governance_layer\rego_policies\provenance_compliance.rego"  # ← Fixed path and consistency
+    enforcement_phase: "pre-prediction"
+    related_regulation:
+      source: "EU AI Act"
+      article: "Article 9 - Risk Management System"
+      summary: >
+        AI providers must maintain documented controls and traceability
+        for the data and models used.
+    rag_reference:
+      doc_id: "eu_ai_act_article_9"
+      doc_path: "regulations/eu_ai_act_article_9.txt"
+      vector_tag: "traceability"
+    action_on_violation: "DENY"

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/522732986503593680/9b69f216f71c4dfca63f4aff00d11b01/artifacts
+end_time: 1763744779388
+entry_point_name: ''
+experiment_id: '522732986503593680'
+lifecycle_stage: active
+run_id: 9b69f216f71c4dfca63f4aff00d11b01
+run_name: sassy-yak-38
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1763744768426
+status: 3
+tags: []
+user_id: Abcom

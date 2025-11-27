@@ -4,16 +4,41 @@ import pandas as pd
 import os,sys
 from pathlib import Path
 from sklearn.utils import resample
+from imblearn.over_sampling import SMOTE
+
+def check_duplicates(df:pd.DataFrame) ->pd.DataFrame:
+    """chcek for duplicate values"""
+    try:
+        initial_rows= len(df)
+        #chcek for duplicate ids
+        duplicate_ids= df['ID'].duplicated().sum()
+
+        if duplicate_ids>0:
+            logging.info(f"found{duplicate_ids} out of {initial_rows}")
+        
+        #log samples of duplicates
+        dupl_samples= df[df["ID"].duplicated(keep=False)]['ID'].unique()[:5]
+        logging.info(f"Sample duplicate IDs: {dupl_samples.tolist()}")
+        
+        #drop duplicate ids
+        # Remove duplicate IDs (keep first occurrence)
+        df_clean = df.drop_duplicates(subset=['ID'], keep='first')
+        logging.info(f"Removed {duplicate_ids} duplicate IDs. {initial_rows} → {len(df_clean)}")
+        return df_clean
+    except Exception as e:
+        raise CGAgentException(e,sys)
 
 def categorical_consolidation(df:pd.DataFrame,features:dict) ->pd.DataFrame:
     """Handle inconsistent categorical codes and dtype validation."""
     try:
         #basic sanity check
+        df.columns = df.columns.str.strip()   
+        logging.info(df.columns)
         expected_cols= set(features["raw_features"])
         missing_cols=expected_cols-set(df.columns)
         if missing_cols:
             print(f"warning :missing columns in dataset")
-            logging.info("warning :missing columns in dataset")
+            logging.info(f"warning :missing columns in dataset{missing_cols}")
     
 
         #checking for correct dtypes
@@ -27,10 +52,10 @@ def categorical_consolidation(df:pd.DataFrame,features:dict) ->pd.DataFrame:
         #categorical consolidation
 
         df["EDUCATION"]=df["EDUCATION"].replace({5:4,6:4,0:4})
-        logging.info("5,6 replaced by unknown in education column")
+        logging.info("5,6 replaced by 0 in education column")
 
         df["MARRIAGE"]=df["MARRIAGE"].replace({0:3})
-        logging.info("zero replaced by others")
+        logging.info("zero replaced by 3 (3rd category)")
         logging.info("Categorical consolidation completed")
         return df
     
@@ -38,7 +63,7 @@ def categorical_consolidation(df:pd.DataFrame,features:dict) ->pd.DataFrame:
         raise CGAgentException(e,sys)
 
                         
-def clip_outliers(df:pd.DataFrame,features:dict)->pd.DataFrame:
+def clip_outliers(df:pd.DataFrame)->pd.DataFrame:
     """Clip repayment history columns to valid range."""
     try:
         pay_cols= [f"PAY_{i}"for i in [0,1,2,3,4,5,6]]
@@ -55,11 +80,16 @@ def clip_outliers(df:pd.DataFrame,features:dict)->pd.DataFrame:
 def handle_missing_values(df:pd.DataFrame):
     """Detect and impute missing values."""
     try:
-        missing_col=[col for col in df.columns if df[col].isnull().any()]
-        if len(missing_col)>0:
-            print(f"cols has missing values {missing_col}")
-            logging.info(f"cols has missing values {missing_col}")
-        return missing_col
+        missing_cols=[]
+        for col in df.columns:
+            if df[col].isnull().any():
+                missing_cols.append(col)
+                print(f"cols has missing values {col}")
+                logging.info(f"cols has missing values {col}")
+        
+        if not missing_cols:
+            logging.info("No misisng values found")
+        return df
     except Exception as e:
         raise CGAgentException(e,sys)
         
@@ -83,62 +113,72 @@ def impute_missing_values(df:pd.DataFrame):
         existing_pay_cols=[c for c in pay_cols if c in df.columns]
         if existing_pay_cols and df[existing_pay_cols].isnull().any().any():
             df[existing_pay_cols] = df[existing_pay_cols].fillna(df[existing_pay_cols].mode().iloc[0])
-            logging.info(f"Missing values imputed for PAY columns: {existing_pay_cols}")      
+            logging.info(f"Missing values imputed for PAY columns: {existing_pay_cols}")  
+        else:
+            logging.info("No missing values in any cols")    
         return df
     except Exception as e:
         raise CGAgentException(e,sys)
 
-def check_data_imbalance(df:pd.DataFrame):
-    count= df["default.payment.next.month"].value_counts()
-    print(f"\n class_count: \n",count)
+def check_data_imbalance(df: pd.DataFrame):
+    try:
+        logging.info("Checking data imbalance")
 
-    #class percenteges
-    class_per= df["default.payment.next.month"].value_counts(normalize=True)*100
-    print("\nClass percentages:\n", class_per)
+        class_per = df["default_payment_next_month"].value_counts(normalize=True) * 100
+        print("\nClass percentages:\n", class_per)
 
-    imbalance_ratio= class_per.max()/class_per.min()
-    print(f"\n significant clas simbalance detected" ,{imbalance_ratio})
+        min_pct = class_per.min()
+        max_pct = class_per.max()
+        imbalance_ratio = max_pct / min_pct
+
+        logging.info(f"\nImbalance ratio: {imbalance_ratio:.2f}")
+
+
+        # RULE 2 — imbalance ratio > 1.6 → upsample
+        if imbalance_ratio > 1.1:
+            logging.info("Using SMOTE for balancing")
+            return True
+        else:
+            logging.info("No balancing needed")
+            return False
+    except Exception as e:
+        raise CGAgentException(e,sys)
+
+def apply_smote_with_preserved_ids(df, target_col="default_payment_next_month"):
+    try:
+        X = df.drop(columns=[target_col])
+        y = df[target_col]
+
+        original_ids = df["ID"].values
+        max_old_id = df["ID"].max()
+        original_count = len(df)
+
+        smote = SMOTE(random_state=42)
+        X_res, y_res = smote.fit_resample(X, y)
+
+        total_after = len(X_res)
+
+        new_ids = []
     
-    if imbalance_ratio >1.6:
-        print("\nSignificant class imbalance detected.")
-        return True
-    else:
-        print("\n No major imbalance detected.")
-        return False
 
+        for i in range(total_after):
+            if i < original_count:
+                # ORIGINAL ROW → KEEP ORIGINAL ID
+                new_ids.append(original_ids[i])
+               
+            else:
+                # SMOTE-GENERATED SAMPLE → NEW UNIQUE ID
+                new_ids.append(max_old_id + (i - original_count) + 1)
+        
+        df_bal = pd.DataFrame(X_res, columns=X.columns)
+        df_bal[target_col] = y_res
+        df_bal["ID"] = new_ids
+      
 
-def handle_imbalance_data(df:pd.DataFrame,target_col:str="default.payment.next.month",method: str = "upsample") -> pd.DataFrame:
+        return df_bal
 
-    majority_class= df[target_col].value_counts().idxmax()
-    minority_class= df[target_col].value_counts().idxmin()
-
-    df_majority=df[df[target_col]==majority_class]
-    df_minority= df[df[target_col]==minority_class]
-
-    if method=="upsample":
-        df_minority_upsampled=resample(
-            df_minority,
-            replace=True,
-            n_samples=len(df_majority),
-            random_state=42
-        )
-        df_balanced= pd.concat([df_majority,df_minority_upsampled])
-
-    elif method=="downsample":
-        df_majority_downsampled= resample(
-            df_majority,
-            replace=True,
-            n_samples=len(df_minority),
-            random_state=42
-        )
-    
-        df_balanced= pd.concat([df_majority_downsampled,df_minority])
-    else:
-        raise ValueError("Method must be 'upsample' or 'downsample'")
-
-    print(f"\n Data balanced using {method}. New class distribution:\n{df_balanced[target_col].value_counts()}")
-    return df_balanced
-
+    except Exception as e:
+        raise CGAgentException(e,sys)
 
 def prepare_data(df:pd.DataFrame):
     try:
@@ -148,7 +188,7 @@ def prepare_data(df:pd.DataFrame):
             ids = df[id_col]
         else:
             ids = None
-        return df,ids
+        return ids
     except Exception as e:
         raise CGAgentException(e,sys)
 

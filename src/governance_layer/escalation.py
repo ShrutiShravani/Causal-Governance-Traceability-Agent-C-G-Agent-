@@ -16,7 +16,7 @@ def escalate_human_review(agent_name:str,client_transaction_id:str,trace_id:str,
     """
     try:
         escalation_id= f"ESC-{client_transaction_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-        logging.info(f"Escalation triggered for prediction_id={client_transaction_id},escalation_id={escalation_id}")
+        logging.info(f"Escalation triggered for client_transaction_id={client_transaction_id},escalation_id={escalation_id}")
 
         #Build extra payload for audit logging
         escalation_payload={
@@ -27,10 +27,6 @@ def escalate_human_review(agent_name:str,client_transaction_id:str,trace_id:str,
             "timestamp": datetime.utcnow().isoformat() + "Z"
         }
 
-        artifact_id=register_artifact("human_review_escalation",{"evidence":escalation_payload})
-        escalation_payload["artifact_id"] = artifact_id
-        logging.info(f"Escalation artifact registered wiht id= {artifact_id}")
-
         #log event for governnace traceability
         log_event(
             agent_name=agent_name,
@@ -39,7 +35,9 @@ def escalate_human_review(agent_name:str,client_transaction_id:str,trace_id:str,
             phase="Phase3_Governance",
             event_type="HUMAN_ESCALATION",
             summary="Prediction requires human review due to policy violations or low confidence",
-            extra_payload=escalation_payload
+            extra_payload={
+                "escalation_payload":escalation_payload
+            }
 
         )
         return escalation_payload

@@ -30,3 +30,8 @@ psycopg2-binary
 # Testing
 pytest
 imblearn
+
+#tracking
+mlflow
+opa_client
+boto3

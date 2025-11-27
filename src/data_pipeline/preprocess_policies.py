@@ -39,7 +39,7 @@ def get_feature_audit_rules()->Dict[str,Any]:
 
 
 #master function for pac generation
-def generate_pac_metadata(train_val_hashes,test_hashes,split_ratio="80/10/10",data_version:str="1.0")->Dict[str,Any]:
+def generate_pac_metadata(train_val_hashes,split_ratio="80/10/10",data_version:str="1.0")->Dict[str,Any]:
     """Aggregates all policies into the final, versionable metadata dictionary."""
     metadata={
         "governance_context":{
@@ -47,8 +47,7 @@ def generate_pac_metadata(train_val_hashes,test_hashes,split_ratio="80/10/10",da
         "creation_timestamp": pd.Timestamp.now().isoformat(),
         "daa_agent_version": data_version,
         "split_strategy": split_ratio,
-        "data_version_hash_key": train_val_hashes ,# Linkage to the training data hash
-        "test_data_version_hash_key":test_hashes
+        "data_version_hash_key": train_val_hashes # Linkage to the training data hash
     },
     "data_integrity_rules": get_integrity_rules(),
     "feature_engineering_rules": get_feature_audit_rules(),

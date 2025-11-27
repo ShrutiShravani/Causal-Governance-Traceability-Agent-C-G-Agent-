@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/522732986503593680/14cce7d061a040f4a32f531ea19f618e/artifacts
+end_time: 1763737775149
+entry_point_name: ''
+experiment_id: '522732986503593680'
+lifecycle_stage: active
+run_id: 14cce7d061a040f4a32f531ea19f618e
+run_name: flawless-kite-505
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1763737766120
+status: 3
+tags: []
+user_id: Abcom

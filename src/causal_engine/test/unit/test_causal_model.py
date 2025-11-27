@@ -5,6 +5,7 @@ import pytest
 from src.causal_engine.causal_model import CausalModel
 from sklearn.ensemble import GradientBoostingClassifier
 import pandas as pd
+import exception
 
 
 @pytest.fixture
@@ -33,16 +34,16 @@ def test_model_instance() :
     
 def test_model_shape_mismatch():
     model = CausalModel(features=["LIMIT_BAL"], model=None)
-    X_train_mismatch= pd.DataFrame({"LIMIT_BAL":np.random.rand(100,1)})
+    X_train_mismatch= pd.DataFrame({"LIMIT_BAL":np.random.rand(100)})
     y_train_mismatch= np.random.rand(50)
     
-    with pytest.raises(ValueError, match="Input and target data must have the same number of samples."):
+    with pytest.raises(exception.CGAgentException):
         model.fit(X_train_mismatch, y_train_mismatch)
 
 def test_model_predict(sample_data):
 
     df, y = sample_data
-    model = CausalModel(features=["LIMIT_BAL", "AGE", "PAY_1", "PAY_2"])
+    model = CausalModel(features=["LIMIT_BAL", "AGE", "PAY_1", "PAY_2"],model=None)
 
     # Train first
     model.fit(df, y)
@@ -68,7 +69,7 @@ def test_predict_proba_after_training(sample_data):
 
 def test_predict_missing_feature_should_fail(sample_data):
     df, y = sample_data
-    model = CausalModel(features=["LIMIT_BAL", "AGE", "PAY_1", "PAY_2", "MISSING"])
+    model = CausalModel(features=["LIMIT_BAL", "AGE", "PAY_1", "PAY_2", "MISSING"],model=None)
 
     # Training should fail due to missing feature
     with pytest.raises((CGAgentException)):

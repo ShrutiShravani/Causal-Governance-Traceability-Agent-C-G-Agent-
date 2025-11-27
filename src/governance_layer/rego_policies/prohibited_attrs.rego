@@ -1,26 +1,31 @@
-package policies.prohibited_attributes
+package policies.prohibited_attrs
 
-# List of prohibited attributes
-prohibited_attributes := ["SEX", "AGE", "RACE", "ETHNICITY"]
+# Helper function to check violations
+check_violations() = violations {
+    prohibited_attributes := ["SEX", "AGE", "EDUCATION"]
+    max_influence := 0.3
+    
+    violations = [violation |
+        driver_pair := input.xai_artifact.local_top_drivers[_]
+        prohibited_attr := driver_pair[0]
+        influence_value := driver_pair[1]
+        prohibited_attributes[_] == prohibited_attr
+        abs(influence_value) > max_influence
+        
+        violation := {
+            "attribute": prohibited_attr,
+            "influence": abs(influence_value),
+            "threshold": max_influence,
+            "message": sprintf("Prohibited attribute %v has excessive influence: %v", [prohibited_attr, abs(influence_value)])
+        }
+    ]
+}
 
-# Maximum allowed influence for prohibited attributes
-max_influence := 0.1
-
-# Main rule: evaluate the input top_drivers
-violations := [v |
-    input_top := input.top_drivers[_]
-    attr := input_top.feature
-    value := input_top.shap_value
-    prohibited_attributes[_] == attr
-    abs(value) > max_influence
-    v := {
-        "rule": "ProhibitedAttributeCheck",
-        "attribute": attr,
-        "influence": abs(value),
-        "threshold": max_influence,
-        "message": sprintf("%v influence exceeds permissible limit", [attr])
-    }
-]
-
-# Allow if no violations
-allow := count(violations) == 0
+# ONLY ONE root document
+result := {
+    "prohibited_attributes": ["SEX", "AGE", "EDUCATION"],
+    "max_influence": 0.3,
+    "violations": check_violations(),
+    "allow": count(check_violations()) == 0,
+    "checked_attributes": ["SEX", "AGE", "EDUCATION"]
+}

@@ -22,7 +22,16 @@ class OrchestratorAgent:
             with self.tracer.start_as_current_span("orchestration_logic",context=ctx) as span:
                 
                 payload = inject_trace_context(payload)
-
+                
+                log_event(
+                    trace_id=self.trace_id,
+                    client_transaction_id=self.client_transaction_id,
+                    agent_name=self.agent_name,
+                    phase="Orchestration",
+                    event_type="Orchestration_Started",
+                    summary=str(e),
+                    extra_payload=None
+                )
                 #prediction agent
                 logging.info(f"[PredictionAgent] trace_id={self.trace_id}, txn_id={self.client_transaction_id}")
                 prediction=PredictionAgent(self.trace_id,self.client_transaction_id).run(payload)
@@ -42,7 +51,8 @@ class OrchestratorAgent:
                     agent_name=self.agent_name,
                     phase="Orchestration",
                     event_type="ERROR",
-                    summary=str(e)
+                    summary=str(e),
+                    extra_payload=None
                 )
                 return {
                     "agent":self.agent_name,

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/522732986503593680/85256e5766264a09abd246be7e368096/artifacts
+end_time: 1763724646436
+entry_point_name: ''
+experiment_id: '522732986503593680'
+lifecycle_stage: active
+run_id: 85256e5766264a09abd246be7e368096
+run_name: causal_training
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1763724336370
+status: 3
+tags: []
+user_id: Abcom

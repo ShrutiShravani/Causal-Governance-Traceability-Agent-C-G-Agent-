@@ -47,11 +47,14 @@ class Data_Reader:
             print(f"Loaded raw dataset: {paths['dataset_name']} with shape {df.shape}")
             logging.info(f"loaded dataset :raw_path: {paths['dataset_name']} with shape {df.shape}")
 
-            #ensure parent directory exist# ✅ ensure parent directory exists
+            #ensure parent directory exist#  ensure parent directory exists
+            if not raw_path.exists():
+                raise FileNotFoundError(f"Raw dataset not found at {raw_path}")
+            
             raw_data_path.parent.mkdir(parents=True, exist_ok=True)
             df.to_csv(raw_data_path, index=False)
 
-            logging.info(f"✅ Raw dataset saved to: {raw_data_path}")
+            logging.info(f"Raw dataset saved to: {raw_data_path}")
 
             return df, paths, features
         

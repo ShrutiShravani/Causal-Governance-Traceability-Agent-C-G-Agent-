@@ -1,3 +1,4 @@
+from atexit import register
 from psycopg2 import extras
 import json
 from typing import Dict, Any, Optional
@@ -5,23 +6,25 @@ import logging
 from exception import CGAgentException
 import os,sys
 import psycopg2
-from src.traceability.traceability_agent_service  import TraceabilityAgentService 
-from src.traceability.graph_config import GraphDBClient
 import uuid
 from datetime import datetime
+from src.traceability.cloud_storage import CloudStorageService
 
 DB_CONFIG={
     "dbname":"audit_db",
-    "user":"audit_user",
-    "password":"secure_password",
+    "user":"test",
+    "password":"test",
     "host":"localhost",
     "port":"5432"
 }
 #intialize GRAS Service on startup (o[ertaional fallback)
 try:
-    GRAPH_CLIENT=GraphDBClient()
+    from src.traceability.traceability_agent_service  import TraceabilityAgentService 
+    from src.traceability.graph_config import GraphDBClient
+    GRAPH_CLIENT=GraphDBClient(use_mock=True)
     GRAS_SERVICE= TraceabilityAgentService(GRAPH_CLIENT)
     GRAS_ENABLED=True
+    logging.info("GRAS Service initialized successfully")
 except Exception as e:
     logging.error(f"Failed to initialize GARS BService.Proceeding with SQL only:{e}")
     GRAS_ENABLED=False
@@ -111,7 +114,7 @@ def log_event(agent_name:str,event_type:str,phase:str,client_transaction_id:Opti
             conn.close()
 
 
-def register_artifact(table_name: str,data: Dict[str, Any]) -> str:
+def register_artifact(table_name: str,data: Dict[str, Any],client_transaction_id:Optional[str]) -> str:
     """
     A utility function to insert data into the Policy, Dataset, or Evidence tables.
     Used primarily by the DAA in Phase 1 for logging certified artifacts.
@@ -123,6 +126,26 @@ def register_artifact(table_name: str,data: Dict[str, Any]) -> str:
         
         # Build dynamic SQL query safely
         columns = list(data.keys())
+          #cloud tsorage integration
+        local_path = data.get('dvc_path') or data.get('storage_path')
+        if local_path and os.path.exists(local_path):
+            try:
+                cloud_storage= CloudStorageService(use_real_s3=True)
+
+                    #uplaod to cloud and get public url
+                cloud_url= cloud_storage.upload_artifact(
+                        local_path=local_path,
+                        artifact_type= table_name,
+                        client_transaction_id=client_transaction_id 
+                )
+
+                #add cloud url to artifact data
+                data['s3_path']=cloud_url
+                logging.info(f"Uploaded {local_path} to S3: {cloud_url}")
+            except Exception as e:
+                logging.warning(f"S3 upload failed for {local_path}: {e}")
+        
+        columns=list(data.keys())
         values = [data[column] for column in columns]
         
         # Use parameter substitution for safety
@@ -131,11 +154,28 @@ def register_artifact(table_name: str,data: Dict[str, Any]) -> str:
         VALUES ({', '.join(['%s'] * len(columns))})
         RETURNING *;
         """
-        
+
+    
         cursor.execute(sql, values) 
-        registered_id = cursor.fetchone()[0]
+        result = cursor.fetchone()
+         # FIXED: Get the UUID primary key (first column)
+        if table_name == "dataset_version":
+            registered_id = result[0]  # dataset_id UUID
+        elif table_name == "policy_document":
+            registered_id = result[0]  # policy_id UUID  
+        elif table_name == "evidence_pointer":
+            registered_id = result[0]  # evidence_id UUID
+        else:
+            registered_id= result[0]
         conn.commit()
-        
+
+    
+        if GRAS_ENABLED:
+            try:
+                # Pass the complete, canonical data object to the synthesis layer
+                GRAS_SERVICE.synthesize_and_ingest_artifact(table_name,data)
+            except Exception as e:
+                logging.info(f"GARS Synthesis failed for event {table_name}:{e}")
         logging.info(f" Registered artifact in {table_name}. ID: {registered_id}")
         return str(registered_id)
     
@@ -150,3 +190,34 @@ def register_artifact(table_name: str,data: Dict[str, Any]) -> str:
     finally:
         if conn:
             conn.close()
+
+def get_model_version_info(self):
+    """get model info from evidence pointer table"""
+    try:
+        conn= get_db_connection()
+        cursor= conn.cursor()
+
+        cursor.execute("""
+         SELECT evidence_id,mlflow_model_name,mlflow_model_version, mlflow_run_id,dvc_path
+            FROM evidence_pointer 
+            WHERE kind = 'TRAINED_MODEL'
+            ORDER BY created_at DESC 
+            LIMIT 1
+        """)
+
+        result= cursor.fetchone()
+        conn.close()
+
+        if result:
+            return {
+                "evidence_id":result[0],
+                "mlflow_model_name": result[1],
+                "mlflow_model_version": result[2], 
+                "mlflow_run_id": result[3],
+                "model_path": result[4]
+
+            }
+        return None
+    except Exception as e:
+        logging.warning(f"Could not fetch model info from DB: {e}")
+        return None

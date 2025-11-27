@@ -11,7 +11,7 @@ class PolicyEngine:
     Loads policies from registry, queries OPA, and aggregates results.
     """
 
-    def __init__(self,registry_path:str ="governance_layer/policy_registry.yaml", opa_url: str = "http://localhost:8181/v1/data"):
+    def __init__(self,registry_path:str =r"src\governance_layer\policy_regsitry.yaml", opa_url: str ="http://localhost:8181"):
         self.registry_path = registry_path
         self.opa_client = OPAClient(opa_url=opa_url)
         self.policies = self._load_policy_registry()
@@ -22,7 +22,7 @@ class PolicyEngine:
         try:
             if not os.path.exists(self.registry_path):
                 raise FileNotFoundError(f"File not found at {self.registry_path}")
-            with open(self.registry_path,"r") as f:
+            with open(self.registry_path,"r",encoding="utf-8") as f:
                 registry= yaml.safe_load(f)
             logging.info(f"Loaded policy registry from {self.registry_path}")
             return registry.get("policies",{})
@@ -45,10 +45,13 @@ class PolicyEngine:
                     logging.info(f"No rego path defined for policy {policy_path}")
                     continue
                 logging.info(f"Evaluating poicy {policy_name} via OPA at {policy_path}")
-                results=self.opa_client.query_policy(policy_path,input_payload)
-            
+                policy_results=self.opa_client.query_policy(policy_path,input_payload)
+                results[policy_name]=policy_results
+            print(results)
+            logging.info(f"Policy evaluation completed. {len(results)} policies evaluated.")
             return results
         except Exception as e:
+            logging.error(f"Policy evaluation failed: {e}")
             raise CGAgentException(e,sys)
 
     

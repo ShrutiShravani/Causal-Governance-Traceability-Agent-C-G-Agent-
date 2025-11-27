@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/522732986503593680/eec297da6bfb40d590a7c9c6d767dc14/artifacts
+end_time: 1763724689461
+entry_point_name: ''
+experiment_id: '522732986503593680'
+lifecycle_stage: active
+run_id: eec297da6bfb40d590a7c9c6d767dc14
+run_name: thundering-bear-262
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1763724654832
+status: 3
+tags: []
+user_id: Abcom

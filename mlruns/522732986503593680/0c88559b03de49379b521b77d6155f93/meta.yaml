@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/522732986503593680/0c88559b03de49379b521b77d6155f93/artifacts
+end_time: 1763738701771
+entry_point_name: ''
+experiment_id: '522732986503593680'
+lifecycle_stage: active
+run_id: 0c88559b03de49379b521b77d6155f93
+run_name: enchanting-ant-579
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1763738595906
+status: 3
+tags: []
+user_id: Abcom

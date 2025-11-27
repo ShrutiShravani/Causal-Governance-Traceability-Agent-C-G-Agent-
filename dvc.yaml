@@ -1,12 +1,12 @@
 stages:
  data_pipeline:
-  cmd: python "src\agent\data_assurance_agent.py"
+  cmd: python -m src.agent.data_assurance_agent
   deps:
    - src\data_pipeline\data_loader.py
    - src\config\paths.yaml
    - src\config\features.yaml
    - src\data_pipeline\data_cleaning.py
-   - default of credit card clients.csv
+   - default_of_credit_card_clients.csv
    - src\data_pipeline\confident_learning.py
    - src\data_pipeline\feature_engineering.py
    - src\data_pipeline\data_hashing.py

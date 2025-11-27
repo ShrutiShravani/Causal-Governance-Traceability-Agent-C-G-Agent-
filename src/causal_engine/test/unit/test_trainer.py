@@ -16,7 +16,7 @@ def test_training_engine_returns_expected_keys(tmp_path, monkeypatch):
 
     df_conf = pd.DataFrame({
         "ID": [1, 2],
-        "confidence": [0.9, 0.2]
+        "quality_score": [0.9, 0.2]
     })
 
     # Save to temp folder

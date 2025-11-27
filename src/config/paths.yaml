@@ -1,17 +1,18 @@
-dataset_name: credit_card_clients
-source_path: default of credit card clients.csv
-raw_path:data/datasets/raw/raw_credit.csv
-interim_path: data/datasets/interim/credit_clean_interim.csv
-target_path: data/datasets/final_processed/credit_clean.csv
-confident_learning_path:data\quality\confident_learning_report.csv
-mislabelled_report_path:data\quality\mislabelled_report.json
-X_train_path:data/datasets/data_ingested/X_train_credit_clean.csv
-X_test_path:data/datasets/data_ingested/X_test_credit_clean.csv
-X_val_path: data/datasets/data_ingested/X_val_credit_clean.csv
-y_train_path:data/datasets/data_ingested/y_train_credit_clean.csv
-y_test_path:data/datasets/data_ingested/y_test_credit_clean.csv
-y_val_path: data/datasets/data_ingested/y_val_credit_clean.csv
-final_data:data/datasets/final/credit_clean.csv
-X_train_val_hash:data/datasets/hash_version/hash_train_val.json
-X_test_hash:data/datasets/hash_version/hash_test.json
-pac_metadata:data/version/metadata.yaml
+dataset_name: "credit_card_clients"
+source_path: "default_of_credit_card_clients.csv"
+raw_path: "data/datasets/raw/raw_credit.csv"
+interim_path: "data/datasets/interim/credit_clean_interim.csv"
+target_path: "data/datasets/final_processed/credit_clean.csv"
+confident_learning_path: "data/quality/confident_learning_report.csv"
+mislabelled_report_path: "data/quality/mislabelled_report.json"
+preprocessed_path: "data/transformed/scaling_params.pkl"
+X_train_path: "data/datasets/data_ingested/X_train_credit_clean.csv"
+X_test_path: "data/datasets/data_ingested/X_test_credit_clean.csv"
+X_val_path: "data/datasets/data_ingested/X_val_credit_clean.csv"
+y_train_path: "data/datasets/data_ingested/y_train_credit_clean.csv"
+y_test_path: "data/datasets/data_ingested/y_test_credit_clean.csv"
+y_val_path: "data/datasets/data_ingested/y_val_credit_clean.csv"
+final_data: "data/datasets/final/credit_clean.csv"
+X_train_val_hash: "data/datasets/hash_version/hash_train_val.json"
+X_test_hash: "data/datasets/hash_version/hash_test.json"
+pac_metadata: "data/version/metadata.yaml"

@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/522732986503593680
+creation_time: 1763650444002
+experiment_id: '522732986503593680'
+last_update_time: 1763650444002
+lifecycle_stage: active
+name: CausalModel_Training

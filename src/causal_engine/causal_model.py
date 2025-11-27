@@ -34,6 +34,9 @@ class CausalModel:
             self.validate_features(X)
             logging.info(f"training on {X.shape[0]} rows")
             return self.model.fit(X[self.features],y)
+        except ValueError as e:
+    # Keep sklearn message clean
+           raise CGAgentException(str(e), sys)
         except Exception as e:
             raise CGAgentException(e, sys)
 
